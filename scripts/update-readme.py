@@ -12,7 +12,7 @@ def get_commit_history(path, limit=10):
     try:
         repo = Repo(path)
         # HEAD 브랜치의 최신 커밋부터 limit 개수만큼 가져옵니다.
-        commits = list(repo.iter_commits(max_count=limit))
+        commits = list(repo.iter_commits(max_count=all))
         return commits
     except Exception as e:
         print(f"Git 저장소를 읽는 중 오류 발생: {e}")

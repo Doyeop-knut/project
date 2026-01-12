@@ -19,7 +19,8 @@ class WebResponse:
             for w in week:
                 data_title_score = []
                 contents =[*json_data['titleListMap'][w]]
-                min_score = float('inf')
+                min_score = None
+                scores = []
 
                 print(f"\n ===== 요일 : {w} ====== \n")
                 for i in contents:
@@ -31,17 +32,28 @@ class WebResponse:
                 # print(f"{self.datas[w]} \n \n \n")
                 # print(f"length = {len(self.datas[w])}")
                 for k in range(len(self.datas[w])):
+                    # if self.datas[w][k]['score'] < 9.5: # 9.5점 미만인 웹툰 제목
+                    print(f"제목 : {self.datas[w][k]['title']} |  평점 : {self.datas[w][k]['score']}")
+                    scores.append(self.datas[w][k]['score'])
+                    min_score = min(scores)
+                    max_score = max(scores)
 
-                    if self.datas[w][k]['score'] < 9.5: # 9.5점 미만인 웹툰 제목
-                        print(f"제목 : {self.datas[w][k]['title']} |  평점 : {self.datas[w][k]['score']}")
-
-                    if min_score > self.datas[w][k]['score']:
-                        min_score = self.datas[w][k]['score']
-                        
                     if self.datas[w][k]['score'] == min_score:
-                        min_scored_title = self.datas[w][k]['title']
+                        min_title = self.datas[w][k]['title']
+                    if self.datas[w][k]['score'] == max_score:
+                        max_title = self.datas[w][k]['title']
+                        
+                
+                print(f"\n===== 최소 평점 웹툰 제목 : {min_title} | 평점 : {min_score} =====")
+                print(f"===== 최고 평점 웹툰 제목 : {max_title} | 평점 : {max_score} =====\n")
+
+                #     if min_score > self.datas[w][k]['score']:
+                #         min_score = self.datas[w][k]['score']
+                        
+                #     if self.datas[w][k]['score'] == min_score:
+                #         min_scored_title = self.datas[w][k]['title']
             
-                print(f"최하 평점 웹툰 제목 : {min_scored_title}, 평점 : {min_score}")
+                # print(f"\n||||| 최하 평점 웹툰 제목 : {min_scored_title} || 평점 : {min_score} |||||")
                     
                     
             # print(f"keys = {self.datas.keys()} \n")

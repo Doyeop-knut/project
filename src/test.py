@@ -13,19 +13,19 @@ class WebResponse:
             response = requests.get(target_url)
             response.raise_for_status()
             # print(response.text)
-            soup = BeautifulSoup(response.text, 'html.parser')
-
-            title = soup.title.string if soup.title else 'No title'
+            # soup = BeautifulSoup(response.text, 'html.parser')
+            # title = soup.title.string if soup.title else 'No title'
             
             json_data = json.loads(response.content)
-            print(json_data)
-            # print(soup) 
-
-            # print(' -- [success] --')
-            # print(f"URL = {target_url}")
-            # print(f"title = {title}")
-
-            return soup
+            week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+            for w in week:
+                contents = json_data['titleListMap'][w]
+                print(f"\n ===== 요일 : {w} ====== \n")
+                for i in contents:
+                    # print(i['titleName'])
+                    print(f"제목 : {i['titleName']}")
+            # print(json_data)
+            return json_data
         
         except requests.exceptions.RequestException as e:
             print(f"Error = {e}")
@@ -45,9 +45,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-'''
-request url = https://comic.naver.com/api/webtoon/titlelist/weekday?order=user
-referer = https://comic.naver.com/webtoon
-user_agnet = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
-'''

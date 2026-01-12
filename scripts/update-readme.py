@@ -1,90 +1,61 @@
 import os
-from operator import itemgetter, attrgetter
+from git import Repo
 
-title_project = "# EveryDay - Practice"
+# 1. 설정 및 초기화
+title_project = "# 웹 크롤링 프로젝트"
+sub_project = "### 최신 커밋 내역 (자동 업데이트)"
+repo_path = '../'  # test_commit.py 기준 경로
+readme_path = "../README.md"
 
-sub_project = "### push 후 자동으로 README 수정 기능"
-
-dic = {}
-
-class Problem:
-    def __init__(self,id, week, day, filename, address):
-        self.id =id
-        self.week = week
-        self.day = day
-        self.filename = filename
-        self.address = address
-    def get_week(self):
-        return self.week
-    def get_day(self):
-        return self.day
-    def get_filename(self):
-        return self.filename
-    def __str__(self) -> str:
-        return " | " + self.week + " | " + self.day + " | [" + self.filename + "](" + self.address + ")"  + "|\n"
-
-
-def print_files_in_dir(root_dir, prefix ,problems):
-    value = 1
-    global dic
+def get_commit_history(path, limit=10):
+    """최신 커밋 이력을 리스트로 가져옵니다."""
     try:
-        for (root, dirs, files) in os.walk(root_dir):
-            for filename in files:
-                ext = os.path.splitext(filename)[-1]
-                if ext == '.java':
-                    print("%s %s" % (root, filename))
-                    split_dir = root.split("/")
-                    address = root.replace("../","")
-                    address += "/"+filename
-                    if len(split_dir) >= 4:
-                        week = str(split_dir[2])
-                        dic_key = dic.get(week)
-                        if dic_key is None:
-                            dic[week] = 1
-                        else:
-                            dic[week] = dic.get(week) + 1
-                        day = str(split_dir[3])
-                        filename = str(filename)
-                        if week and day and filename:
-                            problems.append(Problem(str(value),week,day,filename,address))
-                            value += 1
-    except PermissionError:
-        pass
+        repo = Repo(path)
+        # HEAD 브랜치의 최신 커밋부터 limit 개수만큼 가져옵니다.
+        commits = list(repo.iter_commits(max_count=limit))
+        return commits
+    except Exception as e:
+        print(f"Git 저장소를 읽는 중 오류 발생: {e}")
+        return []
 
+def make_commit_table(commits):
+    """커밋 객체 리스트를 마크다운 표 형식으로 변환합니다."""
+    header = "| # | 날짜 | 작성자 | 커밋 메시지 |\n"
+    header += "|---|---|---|---|\n"
+    
+    body = ""
+    for i, commit in enumerate(commits):
+        # 날짜 포맷 변경 (YYYY-MM-DD HH:MM)
+        date_str = commit.authored_datetime.strftime('%Y-%m-%d %H:%M')
+        # 메시지에서 줄바꿈 제거 (표 깨짐 방지)
+        msg = commit.message.strip().replace('\n', ' ')
+        author = commit.author.name
+        
+        body += f"| {i+1} | {date_str} | {author} | {msg} |\n"
+    
+    return header + body
 
-def make_info_header(dic):
-    info = f"| # | week | day |\n"
-    info += f"|---|---|---| \n"
-    for index in range(0,len(dic)):
-        info += f"| {index+1} | {dic[index][0]} | {dic[index][1]} | \n"
-    print(info)
-    return info
+def update_readme():
+    # 2. 데이터 가져오기 (최신 10개 커밋)
+    commits = get_commit_history(repo_path, limit=10)
+    
+    if not commits:
+        print("작성된 커밋이 없습니다.")
+        return
 
-
-def make_info_data(problems):
-    info = f"### 총 푼 문제수 = {len(problems)} 🎉\n\n"
-    info += f"| # | week | day | problem |\n| ------------- | ------------- | ------------- | ------------- |\n"
-    for index in range( 0, len(problems)):
-        temp = f"| {index+1} {problems[index]}"
-        info += temp
-
-    info += """"""
-    return info
-
+    # 3. 마크다운 내용 생성
+    table_content = make_commit_table(commits)
+    
+    # 4. README.md 파일 쓰기
+    try:
+        with open(readme_path, 'w', encoding='utf-8') as f:
+            f.write(title_project + "\n\n")
+            f.write(sub_project + "\n\n")
+            f.write(table_content + "\n")
+            f.write(f"\n*마지막 업데이트 일시: {commits[0].authored_datetime.strftime('%Y-%m-%d %H:%M:%S')}*")
+        print(f"성공적으로 {readme_path}가 갱신되었습니다.")
+    except Exception as e:
+        print(f"파일 저장 중 오류 발생: {e}")
 
 if __name__ == "__main__":
-    problems = []
-    personal_dir = "../src/"
-    print_files_in_dir(personal_dir, "",problems)
-    projects = sorted(problems, key=attrgetter('week','day'),reverse=False)
-    sorted_dic = sorted(dic.items(),key= lambda item: item[0],reverse= False)
-    
-    info = make_info_data(projects)
-    header = make_info_header(sorted_dic)
-
-    with open("../README.md", 'w', encoding='utf-8') as f:
-        f.write(title_project + "\n")
-        f.write(sub_project + "\n")
-        f.write(header + "\n")
-        f.write(info)
-        f.close()
+    update_readme()

@@ -38,6 +38,7 @@ class WebResponse:
                     model_name.append(i["path"])
                     url_model = {"brand" : brand, "models": model_name}
                 print("success to get model names")
+                print(model_name)
                 for m in model_name:
                     generation_select_url = target_url + "generations"+ brand + "/" + m
                     response = requests.get(generation_select_url)
@@ -48,6 +49,7 @@ class WebResponse:
                         generation_data.append(i["key"])
                     # print(generation_data)
                 print("succes to get generation data")
+                print(generation_data)
             #     # get path 
                 for generation in generation_data:
                     generation_filter_url = target_url + "variant-filters-3d" + brand + url_model["models"] + "/" + generation

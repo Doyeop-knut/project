@@ -16,103 +16,28 @@ class WebResponse:
         path_data = []
         uid = []
         products_data = []
+        gen_number = []
         vehicle_info = None
+        url_model = {}
         
         #payloads
         data = {"filter" : {} }
         data2 = {"vin2" :None}
 
         try:
-            # get vehicle manufacturer infos (already prepared)
             for brand in self.general:
                 model_name_url = target_url + "/models/" + brand
                 response = requests.get(model_name_url)
                 response.raise_for_status()
                 json_data = json.loads(response.content)
-
                 model = json_data["models"]
-                # get vehicle model name
                 for i in model:
-                    manufacturer.append(i["manufacturer"]['slug']) 
                     model_name.append(i["path"])
-                    # vehicle_info = {"manufacturer" : i["manufacturer"]['slug'] , "model_name" : model_name}
-                    if i["generationCount"] == 1:
-                        model_name.remove(i["path"])
-                    url_model = {"brand" : brand, "models": model_name}
-                    # print(f"brand = {brand}, model_name = {model_name}")
-                    
-                # # get vehicle generation infos
-                for m in url_model["models"]:
-                    generation_select_url = target_url + "generations"+ url_model["brand"] + "/" + m
-                    response = requests.get(generation_select_url)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    generations = json_data["generations"]
-                    for i in generations:
-                        generation_data.append(i["key"])
-                        # print(generation_data)
-                    url_model.update({"generation" : generation_data})
-                    # print(url_model)
-                    # === TBD ===
-                    # dictionary of vehicle info => {manufactor {model_name{generation_data{ass'y{part}}}}} 
-                    #     vehicle_info.update({"generations": generation_data})
-                    # print(vehicle_info)
-                    # ===========
-
-            # ====== for DEBUG =====
-            # generation_filter_url = "https://api.yoshiparts.com/variant-filters-3d/car/toyota/4runner/4runner-gen_4"
-                for generation in url_model["generation"]:
-                    generation_filter_url = target_url + "variant-filters-3d" + url_model["brand"] + m + "/" + generation
-                    response = requests.post(generation_filter_url, data=data)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    variants = json_data['variants']
-                    # print(len(json_data['variants']))
-                    for i in range(len(variants)):
-                        path_data.append(variants[i]['path'])
-                    print(path_data)
-            # =======================
-
-            # print(path_data)
-            # get uid
-                for path in path_data:
-                    diagram_url = target_url + "diagrams-new" + url_model["brand"] + "/" + path
-                    response = requests.post(diagram_url, data=data)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    diagrams = json_data["diagrams"]
-                    # print(json_data["diagrams"]["uid"])
-                    for i in range(len(diagrams)):
-                        for j in range(len(diagrams[i])):
-                            uid.append(diagrams[i][j]["uid"])
-                            print(uid)
-            # ==================FOR DEBUG ==================
-            # # response = requests.post("https://api.yoshiparts.com/part-list/car/toyota/4runner/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd/1314261_0", data=data2)
-            # response.raise_for_status()
-            # json_data = json.loads(response.content)
-            # products = json_data["products"]
-            # # diagram = json_data["diagram"]
-            # print(diagram["baseName"])
-            # for i in range(len(products)):
-            #     products_data.append({"baseName" : diagram["baseName"], "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
-            # ============================================== #
-
-                # load assembly lists
-                for u in uid:
-                    product_url = target_url + "part-list" + self.general + "/4runner" + "/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd" + "/" + u
-                    response = requests.post(product_url, data=data2)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    products = json_data["products"]
-                    basename = json_data["diagram"]["baseName"]
-                    #load product infos
-                    for i in range(len(products)):
-                        products_data.append({"baseName" : basename, "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
-                #         print(i)
-                    print(products_data)
+                    gen_number.append(i['generationCount'])
+                    url_model.update({"manufacturer" : brand, "models" : model_name, "gen_num": gen_number})
+            
+                print(url_model["gen_num"])
                 model_name.clear()
-                generation_data.clear()
-                path_data.clear()
             return products_data
         
         except requests.exceptions.RequestException as e:

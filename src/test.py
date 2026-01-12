@@ -12,19 +12,13 @@ class WebResponse:
         try:
             response = requests.get(target_url)
             response.raise_for_status()
-            # print(response.text)
-            # soup = BeautifulSoup(response.text, 'html.parser')
-            # title = soup.title.string if soup.title else 'No title'
-            
             json_data = json.loads(response.content)
-            week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+            week = [*json_data["titleListMap"].keys()]
             for w in week:
-                contents = json_data['titleListMap'][w]
+                contents =[*json_data['titleListMap'][w]]
                 print(f"\n ===== 요일 : {w} ====== \n")
                 for i in contents:
-                    # print(i['titleName'])
-                    print(f"제목 : {i['titleName']}")
-            # print(json_data)
+                    print(f"제목 : {i['titleName']} , 별점 = {round(i['starScore'],2)} 점")
             return json_data
         
         except requests.exceptions.RequestException as e:

@@ -16,17 +16,23 @@ class WebResponse:
             json_data = json.loads(response.content)
             week = [*json_data["titleListMap"].keys()]
             for w in week:
-                data_title, data_score = [], []
+                data_title_score = []
                 contents =[*json_data['titleListMap'][w]]
-                # print(f"\n ===== 요일 : {w} ====== \n")
+                print(f"\n ===== 요일 : {w} ====== \n")
                 for i in contents:
                     # print(f"요일 : {w}, 제목 : <<{i['titleName']}>> , 별점 = {round(i['starScore'],2)} 점")
-                    data_title.append(i['titleName'])
-                    data_score.append(i['starScore'])
-                    self.datas[w] = {'title' : data_title, 'score' : data_score}
-            print(f"keys = {self.datas.keys()} \n")
-            print(f"values = {self.datas.values()} \n \n")
-            print(f"all datas = {self.datas}")
+                    # data_title.append(i['titleName'])
+                    # data_score.append(i['starScore'])
+                    data_title_score.append({'title' : i['titleName'], 'score' : i['starScore']})
+                    self.datas[w] = data_title_score
+                # print(f"{self.datas[w]} \n \n \n")
+                # print(f"length = {len(self.datas[w])}")
+                for k in range(len(self.datas[w])):
+                    print(f"제목 : {self.datas[w][k]['title']}, 평점 : {self.datas[w][k]['score']}")
+                
+            # print(f"keys = {self.datas.keys()} \n")
+            # print(f"values = {self.datas.values()} \n \n")
+            # print(f"all datas = {self.datas['MONDAY']}")
             return self.datas
         
         except requests.exceptions.RequestException as e:

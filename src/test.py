@@ -5,7 +5,6 @@ import json
 class WebResponse:
     def __init__(self):
         self.default_site = ""
-        self.headers = {}
         self.datas = {}
 
     def response_html(self, site = None, header = None):
@@ -25,6 +24,9 @@ class WebResponse:
                     data_title.append(i['titleName'])
                     data_score.append(i['starScore'])
                     self.datas[w] = {'title' : data_title, 'score' : data_score}
+            print(f"keys = {self.datas.keys()} \n")
+            print(f"values = {self.datas.values()} \n \n")
+            print(f"all datas = {self.datas}")
             return self.datas
         
         except requests.exceptions.RequestException as e:

@@ -1,61 +1,58 @@
 import os
 from git import Repo
 
-# 1. 설정 및 초기화
+# 설정 및 경로 (update-readme.py의 구조 활용)
 title_project = "# 웹 크롤링 프로젝트"
-sub_project = "### 최신 커밋 내역 (자동 업데이트)"
-repo_path = '../'  # test_commit.py 기준 경로
+sub_project = "### 📜 전체 커밋 히스토리"
+repo_path = '../'
 readme_path = "../README.md"
 
-def get_commit_history(path, limit=10):
-    """최신 커밋 이력을 리스트로 가져옵니다."""
+def get_all_commits(path):
+    """모든 브랜치의 모든 커밋 이력을 가져옵니다."""
     try:
         repo = Repo(path)
-        # HEAD 브랜치의 최신 커밋부터 limit 개수만큼 가져옵니다.
-        commits = list(repo.iter_commits(max_count=all))
+        # test_commit.py 처럼 all=True를 사용하여 모든 커밋을 가져옵니다
+        commits = list(repo.iter_commits(all=True))
         return commits
     except Exception as e:
-        print(f"Git 저장소를 읽는 중 오류 발생: {e}")
+        print(f"Git 저장소 로드 실패: {e}")
         return []
 
-def make_commit_table(commits):
-    """커밋 객체 리스트를 마크다운 표 형식으로 변환합니다."""
-    header = "| # | 날짜 | 작성자 | 커밋 메시지 |\n"
+def make_full_commit_table(commits):
+    """모든 커밋을 표 형식으로 만들고, 접기 기능을 추가합니다."""
+    # 내용이 너무 길어질 수 있으므로 <details> 태그를 사용합니다.
+    header = "<details>\n<summary>클릭하여 전체 커밋 내역 보기 (총 {}개)</summary>\n\n".format(len(commits))
+    header += "| # | 날짜 | 작성자 | 메시지 |\n"
     header += "|---|---|---|---|\n"
     
     body = ""
     for i, commit in enumerate(commits):
-        # 날짜 포맷 변경 (YYYY-MM-DD HH:MM)
         date_str = commit.authored_datetime.strftime('%Y-%m-%d %H:%M')
-        # 메시지에서 줄바꿈 제거 (표 깨짐 방지)
+        # 표 내부 줄바꿈 방지 및 메시지 정리
         msg = commit.message.strip().replace('\n', ' ')
-        author = commit.author.name
-        
-        body += f"| {i+1} | {date_str} | {author} | {msg} |\n"
+        body += f"| {len(commits) - i} | {date_str} | {commit.author.name} | {msg} |\n"
     
-    return header + body
+    footer = "\n</details>"
+    return header + body + footer
 
 def update_readme():
-    # 2. 데이터 가져오기 (최신 10개 커밋)
-    commits = get_commit_history(repo_path, limit=10)
+    commits = get_all_commits(repo_path)
     
     if not commits:
-        print("작성된 커밋이 없습니다.")
         return
 
-    # 3. 마크다운 내용 생성
-    table_content = make_commit_table(commits)
+    content = make_full_commit_table(commits)
     
-    # 4. README.md 파일 쓰기
+    # README.md 파일 작성
     try:
         with open(readme_path, 'w', encoding='utf-8') as f:
             f.write(title_project + "\n\n")
             f.write(sub_project + "\n\n")
-            f.write(table_content + "\n")
-            f.write(f"\n*마지막 업데이트 일시: {commits[0].authored_datetime.strftime('%Y-%m-%d %H:%M:%S')}*")
-        print(f"성공적으로 {readme_path}가 갱신되었습니다.")
+            f.write(content + "\n\n")
+            f.write(f"---\n*최종 갱신일: {commits[0].authored_datetime.strftime('%Y-%m-%d %H:%M:%S')}*")
+        print(f"총 {len(commits)}개의 커밋 내역이 README에 반영되었습니다.")
     except Exception as e:
-        print(f"파일 저장 중 오류 발생: {e}")
+        print(f"파일 작성 중 오류: {e}")
 
 if __name__ == "__main__":
     update_readme()

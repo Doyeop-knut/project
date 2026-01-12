@@ -35,21 +35,24 @@ class WebResponse:
                 for i in model:
                     manufacturer.append(i["manufacturer"]['slug']) 
                     model_name.append(i["path"])
-                    vehicle_info = {"manufacturer" : i["manufacturer"]['slug'] , "model_name" : model_name}
+                    # vehicle_info = {"manufacturer" : i["manufacturer"]['slug'] , "model_name" : model_name}
                     if i["generationCount"] == 1:
                         model_name.remove(i["path"])
-                    print(f"brand = {brand}, model_name = {model_name}")
+                    url_model = {"brand" : brand, "models": model_name}
+                    # print(f"brand = {brand}, model_name = {model_name}")
+                    
                 # # get vehicle generation infos
-                    for m in model_name:
-                        generation_select_url = target_url + "generations"+ brand + "/" + m
-                        response = requests.get(generation_select_url)
-                        response.raise_for_status()
-                        json_data = json.loads(response.content)
-                        generations = json_data["generations"]
-                        for i in generations:
-                            generation_data.append(i["key"])
-                            # print(generation_data)
-
+                for m in url_model["models"]:
+                    generation_select_url = target_url + "generations"+ url_model["brand"] + "/" + m
+                    response = requests.get(generation_select_url)
+                    response.raise_for_status()
+                    json_data = json.loads(response.content)
+                    generations = json_data["generations"]
+                    for i in generations:
+                        generation_data.append(i["key"])
+                        # print(generation_data)
+                    url_model.update({"generation" : generation_data})
+                    # print(url_model)
                     # === TBD ===
                     # dictionary of vehicle info => {manufactor {model_name{generation_data{ass'y{part}}}}} 
                     #     vehicle_info.update({"generations": generation_data})
@@ -58,22 +61,22 @@ class WebResponse:
 
             # ====== for DEBUG =====
             # generation_filter_url = "https://api.yoshiparts.com/variant-filters-3d/car/toyota/4runner/4runner-gen_4"
-            # for generation in generation_data:
-            #     generation_filter_url = target_url + "variant-filters-3d" + self.general + "/4runner" + "/" + generation
-            #     response = requests.post(generation_filter_url, data=data)
-            #     response.raise_for_status()
-            #     json_data = json.loads(response.content)
-            #     variants = json_data['variants']
-            #     # print(len(json_data['variants']))
-            #     for i in range(len(variants)):
-            #         path_data.append(variants[i]['path'])
-            #         print(path_data)
+                for generation in url_model["generation"]:
+                    generation_filter_url = target_url + "variant-filters-3d" + url_model["brand"] + m + "/" + generation
+                    response = requests.post(generation_filter_url, data=data)
+                    response.raise_for_status()
+                    json_data = json.loads(response.content)
+                    variants = json_data['variants']
+                    # print(len(json_data['variants']))
+                    for i in range(len(variants)):
+                        path_data.append(variants[i]['path'])
+                    print(path_data)
             # =======================
 
             # print(path_data)
-            # get path
+            # get uid
                 for path in path_data:
-                    diagram_url = target_url + "diagrams-new" + self.general + "/" + path
+                    diagram_url = target_url + "diagrams-new" + url_model["brand"] + "/" + path
                     response = requests.post(diagram_url, data=data)
                     response.raise_for_status()
                     json_data = json.loads(response.content)
@@ -107,6 +110,9 @@ class WebResponse:
                         products_data.append({"baseName" : basename, "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
                 #         print(i)
                     print(products_data)
+                model_name.clear()
+                generation_data.clear()
+                path_data.clear()
             return products_data
         
         except requests.exceptions.RequestException as e:

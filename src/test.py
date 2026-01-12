@@ -16,7 +16,7 @@ class WebResponse:
             title = soup.title.string if soup.title else 'No title'
 
             print(' -- [success] --')
-            print(f"URL = {target_url}")
+            # print(f"URL = {target_url}")
             print(f"title = {title}")
 
             return soup

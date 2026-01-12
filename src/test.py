@@ -14,10 +14,13 @@ class WebResponse:
             response = requests.get(target_url)
             response.raise_for_status()
             json_data = json.loads(response.content)
+
             week = [*json_data["titleListMap"].keys()]
             for w in week:
                 data_title_score = []
                 contents =[*json_data['titleListMap'][w]]
+                min_score = float('inf')
+
                 print(f"\n ===== 요일 : {w} ====== \n")
                 for i in contents:
                     # print(f"요일 : {w}, 제목 : <<{i['titleName']}>> , 별점 = {round(i['starScore'],2)} 점")
@@ -28,8 +31,19 @@ class WebResponse:
                 # print(f"{self.datas[w]} \n \n \n")
                 # print(f"length = {len(self.datas[w])}")
                 for k in range(len(self.datas[w])):
-                    print(f"제목 : {self.datas[w][k]['title']}, 평점 : {self.datas[w][k]['score']}")
-                
+
+                    if self.datas[w][k]['score'] < 9.5: # 9.5점 미만인 웹툰 제목
+                        print(f"제목 : {self.datas[w][k]['title']} |  평점 : {self.datas[w][k]['score']}")
+
+                    if min_score > self.datas[w][k]['score']:
+                        min_score = self.datas[w][k]['score']
+                        
+                    if self.datas[w][k]['score'] == min_score:
+                        min_scored_title = self.datas[w][k]['title']
+            
+                print(f"최하 평점 웹툰 제목 : {min_scored_title}, 평점 : {min_score}")
+                    
+                    
             # print(f"keys = {self.datas.keys()} \n")
             # print(f"values = {self.datas.values()} \n \n")
             # print(f"all datas = {self.datas['MONDAY']}")

@@ -3,10 +3,12 @@
 ### 📜 전체 커밋 히스토리
 
 <details>
-<summary>클릭하여 전체 커밋 내역 보기 (총 41개)</summary>
+<summary>클릭하여 전체 커밋 내역 보기 (총 43개)</summary>
 
 | # | 날짜 | 작성자 | 메시지 |
 |---|---|---|---|
+| 43 | 2026-01-13 02:38 | = | 260113 - web crawling (차근차근 다시 22) |
+| 42 | 2026-01-12 17:35 | Doyeop_Lee | auto-update README.md |
 | 41 | 2026-01-13 02:35 | = | 260113 - web crawling (차근차근 다시) |
 | 40 | 2026-01-12 17:12 | Doyeop_Lee | auto-update README.md |
 | 39 | 2026-01-13 02:12 | = | 260113 - web crawling (리팩터링 - manufacture, models, gen_num ) |
@@ -52,4 +54,4 @@
 </details>
 
 ---
-*최종 갱신일: 2026-01-13 02:35:10*
+*최종 갱신일: 2026-01-13 02:38:21*

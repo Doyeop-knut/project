@@ -122,7 +122,7 @@ class Crawling:
                                     # 8) 무게
                                     # ==============================
                                     record =(
-                                        manufacturer, path, gen_key, var_path,
+                                        manufacturer, model_path, gen_key, var_path,
                                         uid, parts, product.get('name'), product.get('weight')
                                     )
                                     # ======== 데이터베이스 테이블 작성 ========
@@ -141,7 +141,7 @@ class Crawling:
                                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', record)
                                     
                                 connect.commit()
-                                print(f"[저장 완료] {manufacturer} - {path} : {parts}")
+                                print(f"[저장 완료] {manufacturer} - {model_path} : {parts} | part_name = {product.get('name')}, weight = {product.get('weight')}")
 
         except Exception as e:
             print(f"[에러 발생] {manufacturer} 처리 중 오류 : {e}")

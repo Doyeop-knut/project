@@ -52,7 +52,9 @@ class WebResponse:
                 print(generation_data)
             #     # get path 
                 for generation in generation_data:
-                    generation_filter_url = target_url + "variant-filters-3d" + brand + url_model["models"] + "/" + generation
+                    # print(generation)
+                    generation_filter_url = target_url + "variant-filters-3d" + brand + "/" +m + "/" + generation
+                    print(generation_filter_url)
                     response = requests.post(generation_filter_url, data=data)
                     response.raise_for_status()
                     json_data = json.loads(response.content)

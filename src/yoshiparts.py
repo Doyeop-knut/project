@@ -67,16 +67,16 @@ class WebResponse:
 
             # # print(path_data)
             # # get uid
-            #     for path in path_data:
-            #         diagram_url = target_url + "diagrams-new" + url_model["brand"] + "/" + path
-            #         response = requests.post(diagram_url, data=data)
-            #         response.raise_for_status()
-            #         json_data = json.loads(response.content)
-            #         diagrams = json_data["diagrams"]
-            #         # print(json_data["diagrams"]["uid"])
-            #         for i in range(len(diagrams)):
-            #             for j in range(len(diagrams[i])):
-            #                 uid.append(diagrams[i][j]["uid"])
+                for path in path_data:
+                    diagram_url = target_url + "diagrams-new" + url_model["brand"] + "/" + path
+                    response = requests.post(diagram_url, data=data)
+                    response.raise_for_status()
+                    json_data = json.loads(response.content)
+                    diagrams = json_data["diagrams"]
+                    # print(json_data["diagrams"]["uid"])
+                    for i in range(len(diagrams)):
+                        for j in range(len(diagrams[i])):
+                            uid.append(diagrams[i][j]["uid"])
             #                 print(uid)
             # # ==================FOR DEBUG ==================
             # # # response = requests.post("https://api.yoshiparts.com/part-list/car/toyota/4runner/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd/1314261_0", data=data2)
@@ -90,17 +90,17 @@ class WebResponse:
             # # ============================================== #
 
             #     # load assembly lists
-            #     for u in uid:
-            #         product_url = target_url + "part-list" + self.general + "/4runner" + "/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd" + "/" + u
-            #         response = requests.post(product_url, data=data2)
-            #         response.raise_for_status()
-            #         json_data = json.loads(response.content)
-            #         products = json_data["products"]
-            #         basename = json_data["diagram"]["baseName"]
-            #         #load product infos
-            #         for i in range(len(products)):
-            #             products_data.append({"baseName" : basename, "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
-            #     #         print(i)
+                for u in uid:
+                    product_url = target_url + "part-list" + self.general + "/4runner" + "/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd" + "/" + u
+                    response = requests.post(product_url, data=data2)
+                    response.raise_for_status()
+                    json_data = json.loads(response.content)
+                    products = json_data["products"]
+                    basename = json_data["diagram"]["baseName"]
+                    #load product infos
+                    for i in range(len(products)):
+                        products_data.append({"baseName" : basename, "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
+                #         print(i)
             #         print(products_data)
                 model_name.clear()
                 generation_data.clear()

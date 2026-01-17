@@ -59,6 +59,8 @@ class Crawling:
 
 
     def crawling(self, path):
+        params_dict = {}
+
         # 제작사 정보 수집
         manufacturer = path.replace('/car/', '')
         print(f'\n [시작] 제작사 정보 수집 : {manufacturer}')
@@ -80,6 +82,7 @@ class Crawling:
 
             for model in models_data.get('models',[]):
                 model_path = model["path"]
+                model_name = model['name']
 
                 # 세대 정보 불러오기
                 generations = self.request_data(session, 'GET', f"{self.api_base}generations{path}/{model_path}")
@@ -87,13 +90,25 @@ class Crawling:
 
                 for gen in generations.get("generations", []):
                     gen_key = gen["key"]
-
+                    generation = gen['name']
+                    
                     #Variants 데이터 불러오기
                     variant_data = self.request_data(session, 'POST', f"{self.api_base}variant-filters-3d{path}/{model_path}/{gen_key}", {"filter" : {}})
                     if not variant_data: continue
 
                     for var in variant_data.get('variants', []):
                         var_path = var['path']
+                        var_params = var['params']
+                        for p in range(len(var_params)):
+                            params_dict[var_params[p][0]] = var_params[p][1][0]
+                        
+                        print(f"model = {model_name}, key = {params_dict.keys()}")
+                            # print(params_dict["sales_rigion"])
+                        # for param in range(len(var_params)):
+                        #     # print(f"{var_params[param][0]} - {var_params[param][1][0]}")
+                        #     parameter_names = var_params[param][0]
+                        #     parameters = var_params[param][1][0]
+                        #     print(f"{parameter_names} - {parameters}")
                         # 부품 분류 정보 불러오기
                         diagram_data = self.request_data(session, 'POST', f"{self.api_base}diagrams-new{path}/{var_path}", {"filter": {}})
                         if not diagram_data: continue
@@ -111,37 +126,38 @@ class Crawling:
 
                                 cursor = connect.cursor()
                                 for product in product_data.get('products', []):
-                                    # ========== 정보 기록 ===========
-                                    # 1) 제조사
-                                    # 2) 차종
-                                    # 3) 세대
-                                    # 4) variant
-                                    # 5) uid
-                                    # 6) 부품 분류
-                                    # 7) ass'y 이름
-                                    # 8) 무게
-                                    # ==============================
+                                    # print(product)
+                                #     # ========== 정보 기록 ===========
+                                #     # 1) 제조사
+                                #     # 2) 차종
+                                #     # 3) 세대
+                                #     # 4) variant
+                                #     # 5) uid
+                                #     # 6) 부품 분류
+                                #     # 7) ass'y 이름
+                                #     # 8) 무게
+                                #     # ==============================
                                     record =(
-                                        manufacturer, model_path, gen_key, var_path,
+                                        manufacturer, model_name, generation, var_path,
                                         uid, parts, product.get('name'), product.get('weight')
                                     )
-                                    # ======== 데이터베이스 테이블 작성 ========
-                                    # 1) ID (1씩 증가)
-                                    # 2) manufacturer (제조사)
-                                    # 3) model_name (차종)
-                                    # 4) generation (세대)
-                                    # 5) variant_path (판매 지역, 핸들 위치(좌/우) 등)
-                                    # 6) 각 부품 정보 (diagram_uid)
-                                    # 7) assy_name (부품 어셈블리 정보)
-                                    # 8) part_name (부품 이름)
-                                    # 9) weight (무게)
-                                    # ====================================
+                                #     # ======== 데이터베이스 테이블 작성 ========
+                                #     # 1) ID (1씩 증가)
+                                #     # 2) manufacturer (제조사)
+                                #     # 3) model_name (차종)
+                                #     # 4) generation (세대)
+                                #     # 5) variant_path (판매 지역, 핸들 위치(좌/우) 등)
+                                #     # 6) 각 부품 정보 (diagram_uid)
+                                #     # 7) assy_name (부품 어셈블리 정보)
+                                #     # 8) part_name (부품 이름)
+                                #     # 9) weight (무게)
+                                #     # ====================================
                                     cursor.execute('''INSERT OR IGNORE INTO part_details
                                                    (manufacturer, model_name, generation, variant_path, diagram_uid, assy_name, part_name, weight)
                                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', record)
                                     
                                 connect.commit()
-                                print(f"[저장 완료] {manufacturer} - {model_path} : {parts} | part_name = {product.get('name')}, weight = {product.get('weight')}")
+                                print(f"[저장 완료] {manufacturer} - {model_path} - {gen_key} : {parts} | part_name = {product.get('name')}, weight = {product.get('weight')}")
 
         except Exception as e:
             print(f"[에러 발생] {manufacturer} 처리 중 오류 : {e}")
@@ -160,7 +176,7 @@ def main():
         "/car/toyota", "/car/lexus", "/car/kia", "/car/hyundai", 
         "/car/nissan", "/car/mazda", "/car/mitsubishi", "/car/honda", "/car/mercedes"
     ]
-    crawler = Crawling(max_workers=5)
+    crawler = Crawling(max_workers=10)
     crawler.run(manufacturer)
 
 if __name__ == "__main__":

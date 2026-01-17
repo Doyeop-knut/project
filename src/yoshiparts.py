@@ -18,93 +18,86 @@ class WebResponse:
         products_data = []
         one_gen = []
         vehicle_info = None
+        param_dict = {}
         
         #payloads
         data = {"filter" : {} }
         data2 = {"vin2" :None}
 
         try:
-            # get vehicle manufacturer infos (already prepared)
-            for brand in self.general:
-                model_name_url = target_url + "/models/" + brand
-                response = requests.get(model_name_url)
+            ## 모델 정보
+            model_name_url = target_url +"/models" + "/car/lexus"
+            response = requests.get(model_name_url)
+            response.raise_for_status()
+            json_data = json.loads(response.content)
+            models = json_data['models']
+            print(json_data['models'])
+
+            for i in models:
+                print(f"model = {i['name']}")
+                pass
+                # print(f"oneChildPath = {i['oneChildPath']}")
+            
+            ## 세대 정보
+            generation_select_url = target_url + "generations" + "/car/lexus" + "/es200"
+            response = requests.get(generation_select_url)
+            response.raise_for_status()
+            json_data = json.loads(response.content)
+            generations = json_data['generations']
+            print(json_data['generations'])
+
+            for j in generations:
+                print(f"generations = {j['name']}, key = {j['key']}")
+                pass
+                # print(f"oneVariantPaths = {j['oneVariantPath']}")
+
+            #generation_filter_url = target_url + "variant-filters-3d" + brand + "/" +m + "/" + generation
+            variants_url = "https://api.yoshiparts.com/variant-filters-3d/car/kia/ev6/ev6_gen1"
+
+            response = requests.post(variants_url, data=data)
+            response.raise_for_status()
+            json_data = json.loads(response.content)
+            variants = json_data["variants"]
+            # print(json_data["variants"])
+
+            for k in variants:
+                print(k['params'])
+                params = k['params']
+                # print(f"path = {k['path']}")
+                for p in range(len(params)):
+                    # print(f"{params[p][0]} - {params[p][1][0]}")\
+                    # param_dict.update()
+                    param_dict[params[p][0]] = params[p][1][0]
+                    
+                print(param_dict.keys())
+                print(param_dict)
+                
+                    # pass
+                # diagram_url = target_url + "parts" + "/car/kia" + "/diagrams/" + k['path']
+                # https://api.yoshiparts.com/diagrams-new/car/kia/sephia_mentor_shuma_spectra/mentor_h_b_i_ii_1997_2004-aus-right_hand-5_door-middle_grade-1600_cc-mpi_dohc-5_speed_mt_2wd
+                # https://api.yoshiparts.com/diagrams-new/car/kiasephia_mentor_shuma_spectra/mentor_h_b_i_ii_1997_2004-aus-left_hand-5_door-middle_grade-1800_cc-mpi_dohc-5_speed_mt_2wd
+                
+                diagram_url = target_url + "diagrams-new" + "/car/kia/" + k['path']
+                response = requests.post(diagram_url, data = data)
                 response.raise_for_status()
                 json_data = json.loads(response.content)
 
-                model = json_data["models"]
-                # get vehicle model name
-                for i in model:
-                    manufacturer.append(i["manufacturer"]['slug']) 
-                    model_name.append(i["path"])
-                    url_model = {"brand" : brand, "models": model_name}
-                print("success to get model names")
-                print(model_name)
-                for m in model_name:
-                    generation_select_url = target_url + "generations"+ brand + "/" + m
-                    response = requests.get(generation_select_url)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    generations = json_data["generations"]
-                    for i in generations:
-                        generation_data.append(i["key"])
-                    # print(generation_data)
-                print("succes to get generation data")
-                print(generation_data)
-            #     # get path 
-                for generation in generation_data:
-                    # print(generation)
-                    generation_filter_url = target_url + "variant-filters-3d" + brand + "/" +m + "/" + generation
-                    print(generation_filter_url)
-                    response = requests.post(generation_filter_url, data=data)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    variants = json_data['variants']
-                    # print(len(json_data['variants']))
-                    for i in range(len(variants)):
-                        path_data.append(variants[i]['path'])
-                    print(path_data)
-                print("success to get path data")
+                diagrams = json_data['diagrams']
+                # print(json_data['diagrams'])
 
-            # # print(path_data)
-            # # get uid
-                for path in path_data:
-                    diagram_url = target_url + "diagrams-new" + url_model["brand"] + "/" + path
-                    response = requests.post(diagram_url, data=data)
+                for m in diagrams:
+                    # print(m[0]['uid'])
+                    uid = m[0]['uid']
+ 
+                    u_url = target_url + "part-list" + "/car/kia/" + k['path'] + "/" + uid
+                    response = requests.post(u_url, data = data2)
                     response.raise_for_status()
                     json_data = json.loads(response.content)
-                    diagrams = json_data["diagrams"]
-                    # print(json_data["diagrams"]["uid"])
-                    for i in range(len(diagrams)):
-                        for j in range(len(diagrams[i])):
-                            uid.append(diagrams[i][j]["uid"])
-            #                 print(uid)
-            # # ==================FOR DEBUG ==================
-            # # # response = requests.post("https://api.yoshiparts.com/part-list/car/toyota/4runner/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd/1314261_0", data=data2)
-            # # response.raise_for_status()
-            # # json_data = json.loads(response.content)
-            # # products = json_data["products"]
-            # # # diagram = json_data["diagram"]
-            # # print(diagram["baseName"])
-            # # for i in range(len(products)):
-            # #     products_data.append({"baseName" : diagram["baseName"], "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
-            # # ============================================== #
-
-            #     # load assembly lists
-                for u in uid:
-                    product_url = target_url + "part-list" + self.general + "/4runner" + "/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd" + "/" + u
-                    response = requests.post(product_url, data=data2)
-                    response.raise_for_status()
-                    json_data = json.loads(response.content)
-                    products = json_data["products"]
-                    basename = json_data["diagram"]["baseName"]
-                    #load product infos
-                    for i in range(len(products)):
-                        products_data.append({"baseName" : basename, "parts" : {"part_name" : products[i]["name"] , "weight" : products[i]["weight"]}})
-                #         print(i)
-            #         print(products_data)
-                model_name.clear()
-                generation_data.clear()
-            #     path_data.clear()
+                    products = json_data['products']
+                    # print(json_data['products'])
+                    for prd in products:
+                        # print(prd['name'])
+                        pass
             return products_data
         
         except requests.exceptions.RequestException as e:
@@ -125,13 +118,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-"""
-model selection url = https://api.yoshiparts.com/models/car/toyota
-generation selection url = https://api.yoshiparts.com/generations/car/toyota/4runner
-generation filter url = https://api.yoshiparts.com/variant-filters-3d/car/toyota/4runner/4runner-gen_5
-parts url = https://api.yoshiparts.com/diagrams-new/car/toyota/4runner/grn280-grn280l_gkagk-gr-1grfe-atm-5fc-lhd
-
-
-
-"""
